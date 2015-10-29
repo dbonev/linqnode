@@ -107,3 +107,116 @@ describe("Order By", function(){
 		});
 	});
 });
+
+describe("Order By Desc", function(){
+	describe("#Ordering a simple number array", function(){
+		var entropy = [4, 3, 8, 1, 100, 2, 33];
+		linq.linqify(entropy);
+		var ordered = entropy.order_by_desc(function(n) { return n; }).to_list();
+
+		it('should have the same length', function(){
+			assert.equal(entropy.length, ordered.length);
+		});
+		it('should be ordered', function(){
+			for (var i = 1; i < ordered.length; i++){
+				assert.equal(true, ordered[i - 1] > ordered[i]);
+			}
+		});
+	});
+	describe("#Ordering a complex structure", function(){
+		var persons = [
+			{ 
+				Name: "1",
+				Age: 1
+			},
+			{ 
+				Name: "2",
+				Age: 2
+			},
+		];
+		linq.linqify(persons);
+		var ordered = persons.order_by_desc(function(p) { return p.Age;}).to_list();
+		it("Should be ordered", function(){
+			assert.equal(ordered[0].Age, 2);
+		});
+	});
+});
+
+describe("First", function(){
+	describe("#Taking the first element", function(){
+		var first = a.first(function(n) { return n > 3; });
+		it('Should have selected 4', function(){
+			assert.equal(first, 4);
+		});
+	});
+});
+
+describe("ThenBy", function(){
+	var cars = [
+		{
+			Make: "Toyota",
+			Model: "Avensis",
+			Year: 2008
+		},
+		{
+			Make: "Mazda",
+			Model: "6",
+			Year: 2009
+		},
+		{
+			Make: "Mazda",
+			Model: "6",
+			Year: 2011
+		},
+		{
+			Make: "Mazda",
+			Model: "3",
+			Year: 2010
+		},
+		{
+			Make: "Mazda",
+			Model: "3",
+			Year: 2009
+		}
+	];
+	linq.linqify(cars);
+
+	describe("ThenBy sorting of complex structure", function(){
+		var ordered = cars
+			.order_by(function(car) { return car.Make; })
+			.then_by(function(car) { return car.Model; })
+			.then_by(function(car) { return car.Year; })
+			.to_list();
+		it("Should have Mazda 3 first", function(){
+			var first = ordered[0];
+			assert.equal("3", first.Model);
+			assert.equal("Mazda", first.Make);
+			assert.equal(2009, first.Year);
+		});
+	});
+	describe("ThenByDesc sorting of complex structure", function(){
+		var ordered_desc = cars
+			.order_by(function(car) { return car.Make; })
+			.then_by_desc(function(car) { return car.Model; })
+			.then_by_desc(function(car) { return car.Year; })
+			.to_list();
+		it("Should have Mazda 6 first", function(){
+			var first = ordered_desc[0];
+			assert.equal("Mazda", first.Make);
+			assert.equal("6", first.Model);
+			assert.equal(2011, first.Year);
+		});
+	});
+	describe("Complex query", function(){
+		var mazda_cars = cars
+					.where(function(car) { return car.Make === "Mazda"; })
+					.order_by(function(car) { return car.Model; })
+					.then_by_desc(function(car) { return car.Year; })
+					.select(function(car) { return { Model: car.Model, Year: car.Year, Make: "MAZDA" }})
+					.to_list();
+		it("Should have select properly", function(){
+			assert.equal(4, mazda_cars.length);
+		});
+
+	});
+});
