@@ -4,14 +4,13 @@ The core, essential LINQ functionality C# developers are used to in a clean, min
 This library includes only the very basic, and most widely used parts (where, select, order by, then by).
 All iterators use delayed execution (the collection is _not_ iterated until you call to_list() or forEach()).
 
-Install:
-(from your project dir)
+Install (from your project dir):
 ```
 $ npm install linqnode
 ```
 Usage:
 ```
-var linq = require('../linqnode');
+var linq = require('linqnode');
 // let's have a data structure
 var cars = [
 	{
