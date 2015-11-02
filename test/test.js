@@ -240,3 +240,64 @@ describe("ThenBy", function(){
 
 	});
 });
+
+describe("Complex chaining", function(){
+	var all_cars = [
+		{
+			Make: "Toyota",
+			Model: "Avensis",
+			Year: 2008
+		},
+		{
+			Make: "Mazda",
+			Model: "6",
+			Year: 2009
+		},
+		{
+			Make: "Mazda",
+			Model: "6",
+			Year: 2011
+		},
+		{
+			Make: "Mazda",
+			Model: "3",
+			Year: 2010
+		},
+		{
+			Make: "Mazda",
+			Model: "3",
+			Year: 2009
+		}
+	];
+	linq.linqify(all_cars);
+	var mazda_cars = all_cars
+				.where(function(car) { return car.Make === "Mazda"; })
+				.order_by(function(car) { return car.Model; })
+				.then_by_desc(function(car) { return car.Year; })
+				.select(function(car) { return { CarModel: car.Model, YearOfModel: car.Year, CarMake: "MAZDA" }});
+	it('Should have 4 cars', function(){
+		assert.equal(mazda_cars.to_list().length, 4);
+	});
+	it('All of them should have make MAZDA', function(){
+		mazda_cars.forEach(function(car){
+			assert.equal(car.CarMake, "MAZDA");
+		});
+	});
+	var grouped_cars = mazda_cars
+						.group_by(function(car) { return car.CarModel;});
+	it('Should be able to group by model', function(){
+		grouped_cars.forEach(function(group){
+			var key = group.key;
+			assert.equal(true, key === "6" || key === "3");
+			var val = group.val;
+			assert.equal(2, val.length);
+		});
+	});
+	it('Should be able to query group keys', function(){
+		grouped_cars.keys(function(key){
+			assert.equal(true, key === "6" || key === "3");
+			var val = grouped_cars.value(key);
+			assert.equal(2, val.length);
+		});
+	});
+});
