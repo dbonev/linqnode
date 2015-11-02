@@ -1,0 +1,30 @@
+{
+  "name": "linqnode",
+  "version": "1.0.1",
+  "description": "A tiny, unobtrusive, elegant LINQ implementation.",
+  "main": "linqnode.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^2.3.3"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbonev/linqnode.git"
+  },
+  "keywords": [
+    "LINQ",
+    "C#"
+  ],
+  "author": "Dimitar Bonev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dbonev/linqnode/issues"
+  },
+  "homepage": "https://github.com/dbonev/linqnode#readme"
+}

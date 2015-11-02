@@ -4,6 +4,34 @@ var a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 linq.linqify(a);
 var words = ["aragorn", "gimli", "frodo", "sam", "boromir", "gandalf"];
 linq.linqify(words);
+var cars = [
+	{
+		Make: "Toyota",
+		Model: "Avensis",
+		Year: 2008
+	},
+	{
+		Make: "Mazda",
+		Model: "6",
+		Year: 2009
+	},
+	{
+		Make: "Mazda",
+		Model: "6",
+		Year: 2011
+	},
+	{
+		Make: "Mazda",
+		Model: "3",
+		Year: 2010
+	},
+	{
+		Make: "Mazda",
+		Model: "3",
+		Year: 2009
+	}
+];
+linq.linqify(cars);
 
 describe('Where', function(){
 	describe('#filtering', function(){
@@ -108,6 +136,26 @@ describe("Order By", function(){
 	});
 });
 
+describe("Group by", function(){
+	describe("Group by property", function(){
+		var grouped_cars = cars
+							.group_by(function(car) { return car.Make; });
+		it('Should have two groups', function(){
+			assert.equal(grouped_cars.to_list().length, 2);
+		});
+		it('Mazda group should have 4 members & Toyota -- 2', function(){
+			grouped_cars.keys(function(key){
+				var val = grouped_cars.value(key);
+				if (key === 'Mazda'){
+					assert.equal(val.length, 4);
+				} else if (key === 'Toyota'){
+					assert.equal(val.length, 1);
+				}
+			});
+		});
+	});
+});
+
 describe("Order By Desc", function(){
 	describe("#Ordering a simple number array", function(){
 		var entropy = [4, 3, 8, 1, 100, 2, 33];
@@ -152,34 +200,6 @@ describe("First", function(){
 });
 
 describe("ThenBy", function(){
-	var cars = [
-		{
-			Make: "Toyota",
-			Model: "Avensis",
-			Year: 2008
-		},
-		{
-			Make: "Mazda",
-			Model: "6",
-			Year: 2009
-		},
-		{
-			Make: "Mazda",
-			Model: "6",
-			Year: 2011
-		},
-		{
-			Make: "Mazda",
-			Model: "3",
-			Year: 2010
-		},
-		{
-			Make: "Mazda",
-			Model: "3",
-			Year: 2009
-		}
-	];
-	linq.linqify(cars);
 
 	describe("ThenBy sorting of complex structure", function(){
 		var ordered = cars

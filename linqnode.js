@@ -8,6 +8,7 @@ module.exports = {
 	to_list: _to_list,
 	take: _take,
 	skip: _skip,
+	group_by: _group_by,
 	linqify: _linqify
 }
 
@@ -21,6 +22,7 @@ function _linqify(sequence){
 	sequence.to_list = function() { return _to_list(sequence); };
 	sequence.take = function(number) { return _take(sequence, number); };
 	sequence.skip = function(number) { return _skip(sequence, number); };
+	sequence.group_by = function(selector) { return _group_by(sequence, selector); };
 	sequence.first = function(filter) { return _first(sequence, filter); };
 }
 
@@ -31,6 +33,11 @@ function _where(sequence, filter){
 
 function _select(sequence, transform){
 	var result = new IEnumerableTransform(sequence, transform);
+	return result;
+}
+
+function _select_many(sequence, transform){
+	var result = new IEnumerableTransformMany(sequence, transform);
 	return result;
 }
 
@@ -71,6 +78,11 @@ function _first(sequence, filter){
 	return arr.length > 0 ? arr[0] : undefined;
 }
 
+function _group_by(sequence, selector){
+	var result = new IEnumerableGroupBy(sequence, selector);
+	return result;
+}
+
 function _to_list(sequence){
 	var result = [];
 	sequence.forEach(function(item){
@@ -80,6 +92,11 @@ function _to_list(sequence){
 	return result;
 }
 
+function IEnumerableTransformMany(sequence, transform){
+	this.forEach = function(action){
+	};
+	_linqify(this);
+}
 function IEnumerableTransform(sequence, transform){
 	this.forEach = function(action){
 		sequence.forEach(function(item){
@@ -89,6 +106,45 @@ function IEnumerableTransform(sequence, transform){
 	};
 	_linqify(this);
 }
+
+function IEnumerableGroupBy(sequence, selector){
+	var res_obj = null;
+	this.forEach = function(action){
+		iterate_res_obj_properties(action);
+	};
+	function create_res_obj(){
+		if (res_obj != null){
+			return;
+		}
+		res_obj = {};
+		sequence.forEach(function(item){
+			var group_key = selector(item);
+			if (res_obj[group_key] == null){
+				var arr = [];
+				_linqify(arr);
+				res_obj[group_key] = arr;
+			}
+			res_obj[group_key].push(item);
+		});
+	}
+	function iterate_res_obj_properties(action){
+		create_res_obj();
+		for (prop in res_obj){
+			action({ key: prop, val: res_obj[prop] });
+		}
+	}
+	this.keys = function(action){
+		iterate_res_obj_properties(function(item){
+			action(item.key);
+		});
+	};
+	this.value = function(key){
+		create_res_obj();
+		return res_obj[key];
+	};
+	_linqify(this);
+}
+
 
 function IEnumerableFilter(sequence, filter){
 	this.forEach = function(action){
