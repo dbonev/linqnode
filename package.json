@@ -1,6 +1,6 @@
 {
   "name": "linqnode",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A tiny, unobtrusive, elegant LINQ implementation.",
   "main": "linqnode.js",
   "directories": {

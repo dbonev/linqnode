@@ -300,4 +300,12 @@ describe("Complex chaining", function(){
 			assert.equal(2, val.length);
 		});
 	});
+	it('Should be able to use select_many to flatten a grouping result', function(){
+		var grouped_cars = all_cars
+							.group_by(function(car) { return car.Make; })
+							.where(function(group) { return group.key === "Mazda"; })
+							.select_many(function(group) { return group.val; })
+							.to_list();	
+		assert.equal(grouped_cars.length, 4);
+	});
 });

@@ -1,6 +1,6 @@
 # linqnode
 A minimalistic, simple, javascript LINQ library.
-The core, essential LINQ functionality C# developers are used to in a clean, minimal, unobtrusive and tiny (less than 250 lines of code) library.
+The core, essential LINQ functionality C# developers are used to in a clean, minimal, unobtrusive and tiny (less than 300 lines of code) library.
 This library includes only the very basic, and most widely used parts (where, select, order by, then by).
 All iterators use delayed execution (the collection is _not_ iterated until you call to_list() or forEach()).
 

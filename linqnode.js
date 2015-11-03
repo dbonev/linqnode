@@ -1,6 +1,7 @@
 module.exports = {
 	where: _where,
 	select: _select,
+	select_many: _select_many,
 	order_by: _order_by,
 	order_by_desc: _order_by_desc,
 	then_by: _then_by,
@@ -15,6 +16,7 @@ module.exports = {
 function _linqify(sequence){
 	sequence.where = function(filter){ return _where(sequence, filter); };
 	sequence.select = function(transform) { return _select(sequence, transform); };
+	sequence.select_many = function(transform) { return _select_many(sequence, transform); };
 	sequence.order_by = function(selector) { return _order_by(sequence, selector); };
 	sequence.order_by_desc = function(selector) { return _order_by_desc(sequence, selector); };
 	sequence.then_by = function(selector) { return _then_by(sequence, selector); };
@@ -94,6 +96,14 @@ function _to_list(sequence){
 
 function IEnumerableTransformMany(sequence, transform){
 	this.forEach = function(action){
+		sequence.forEach(function(item){
+			var transformed = transform(item);
+			if ('forEach' in transformed){
+				transformed.forEach(action);
+			} else {
+				action(transformed);
+			}
+		});
 	};
 	_linqify(this);
 }
@@ -157,30 +167,33 @@ function IEnumerableFilter(sequence, filter){
 	_linqify(this);
 }
 
-// not the most efficient way possible, but good enough for now
 function IEnumerableThenBy(sequence, selector, desc){
 	if (sequence._selectors == null || sequence._selectors.length == 0){
 		throw { Error: "then_by should only used after order_by" };
 	}
 
 	this.forEach = function(action){
-		var result = [];
-		sequence.forEach(function(item){
-			result.push(item);
-		});
-		result.sort(function(a, b){
-			for (var i = 0; i < sequence._selectors.length - 1; i++){
-				var meta = sequence._selectors[i];
-				var sel = meta.selector;
-				var is_desc = meta.desc;
-				var sel_comp = __compare_by_selector(a, b, sel, is_desc);
-				if (sel_comp != 0){
-					return sel_comp;
+		if (is_last_selector(this._selectors, selector)){
+			var result = [];
+			sequence.forEach(function(item){
+				result.push(item);
+			});
+			result.sort(function(a, b){
+				for (var i = 0; i < sequence._selectors.length - 1; i++){
+					var meta = sequence._selectors[i];
+					var sel = meta.selector;
+					var is_desc = meta.desc;
+					var sel_comp = __compare_by_selector(a, b, sel, is_desc);
+					if (sel_comp != 0){
+						return sel_comp;
+					}
 				}
-			}
-			return __compare_by_selector(a, b, selector, desc);
-		});
-		result.forEach(action);
+				return __compare_by_selector(a, b, selector, desc);
+			});
+			result.forEach(action);
+		} else {
+			sequence.forEach(action);
+		}
 
 	};
 	this._selectors = sequence._selectors;
@@ -188,16 +201,26 @@ function IEnumerableThenBy(sequence, selector, desc){
 	_linqify(this);
 }
 
+// used for optimization for chained order by / then by calls
+// -- the last one in the chain will execute all selectors in its foreach
+// so there's no need to apply them multiple times
+function is_last_selector(selectors, sel){
+	return selectors[selectors.length - 1].selector === sel;
+}
 function IEnumerableOrderBy(sequence, selector, desc){
 	this.forEach = function(action){
-		var result = [];
-		sequence.forEach(function(item){
-			result.push(item);
-		});
-		result.sort(function(a, b){
-			return __compare_by_selector(a, b, selector, desc);
-		});
-		result.forEach(action);
+		if (is_last_selector(this._selectors, selector)){
+			var result = [];
+			sequence.forEach(function(item){
+				result.push(item);
+			});
+			result.sort(function(a, b){
+				return __compare_by_selector(a, b, selector, desc);
+			});
+			result.forEach(action);
+		}  else {
+			sequence.forEach(action);
+		}
 	};
 	this._selectors = [{ selector: selector, desc: desc }];
 	_linqify(this);
